@@ -5,21 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>米雇用統計 | データベース - netFX</title>
     <style>
-        body { background: #fff; margin: 0; padding: 0; font-family: "Hiragino Kaku Gothic ProN", Meiryo, sans-serif; color: #333; line-height: 1.4; }
+        /* --- netkeiba再現デザイン --- */
+        body { background: #fff; margin: 0; padding: 0; font-family: "Hiragino Kaku Gothic ProN", Meiryo, sans-serif; color: #333; }
         .site-header { background: #006837; color: #fff; padding: 12px 20px; font-weight: bold; font-size: 1.2rem; }
         .container { max-width: 1000px; margin: 0 auto; padding: 20px 10px; }
 
-        /* プロフィール */
         .horse-profile { border-bottom: 2px solid #006837; margin-bottom: 20px; padding-bottom: 10px; }
         .horse-name { font-size: 2.2rem; font-weight: bold; margin: 0; }
         .horse-name span { font-size: 0.9rem; color: #666; font-weight: normal; margin-left: 10px; }
 
-        /* 条件検索エリア (netkeiba風) */
+        /* 検索ボックス (netkeiba風) */
         .search-box { background: #fdfaf0; border: 1px solid #e2d8b5; padding: 15px; margin-bottom: 20px; border-radius: 4px; display: flex; flex-wrap: wrap; gap: 15px; align-items: center; font-size: 0.85rem; }
         .search-item { display: flex; align-items: center; gap: 5px; }
-        select { padding: 5px 10px; border-radius: 4px; border: 1px solid #ccc; font-weight: bold; cursor: pointer; }
+        select { padding: 5px 10px; border-radius: 4px; border: 1px solid #ccc; font-weight: bold; cursor: pointer; background: #fff; }
 
-        /* タブ */
         .tab-menu { display: flex; border-bottom: 1px solid #ccc; margin-bottom: 20px; }
         .tab-item { padding: 12px 20px; font-size: 0.9rem; font-weight: bold; border: 1px solid transparent; margin-bottom: -1px; }
         .tab-active { background: #fff; border: 1px solid #ccc; border-bottom: 1px solid #fff; color: #006837; }
@@ -36,16 +35,11 @@
         .forecast-val { color: #999; font-size: 0.7rem; display: block; }
         .judge-icon { font-size: 1.4rem; }
         .no-data { padding: 40px; text-align: center; color: #999; font-weight: bold; }
-
-        @media (max-width: 768px) {
-            .horse-name { font-size: 1.6rem; }
-            .search-box { flex-direction: column; align-items: flex-start; }
-        }
     </style>
 </head>
 <body>
 
-<header class="site-header">netFX - 指標データベース</header>
+<header class="site-header">netFX - 経済指標データベース</header>
 
 <div class="container">
     <div class="horse-profile">
@@ -76,7 +70,18 @@
             <b>表示月:</b>
             <select id="mSel" onchange="draw()">
                 <option value="all">すべて</option>
-                ${[...Array(12)].map((_, i) => `<option value="${(i+1).toString().padStart(2, '0')}">${i+1}月</option>`).join('')}
+                <option value="01">1月</option>
+                <option value="02">2月</option>
+                <option value="03">3月</option>
+                <option value="04">4月</option>
+                <option value="05">5月</option>
+                <option value="06">6月</option>
+                <option value="07">7月</option>
+                <option value="08">8月</option>
+                <option value="09">9月</option>
+                <option value="10">10月</option>
+                <option value="11">11月</option>
+                <option value="12">12月</option>
             </select>
         </div>
         <div class="search-item">
@@ -107,18 +112,17 @@
                     <th>30分後</th>
                     <th>NFP</th>
                     <th>失業率</th>
-                    <th>時給</th>
+                    <th>平均時給</th>
                 </tr>
             </thead>
-            <tbody id="box">
-                </tbody>
+            <tbody id="box"></tbody>
         </table>
     </div>
 </div>
 
 <script>
+// データ (お手持ちのデータをここに貼り付けてください)
 const data = [
-    // ※ ここにお手持ちの全データを貼り付け
     {"date": "2025-12-16", "time": "22:30", "nfp": {"act": "64K", "for": "51K"}, "unemp": {"act": "4.6%", "for": "4.5%"}, "wage": {"act": "0.1%", "for": "0.3%"}, "pips": {"1": {"1": -22.2, "5": 6.2, "10": -4.9, "20": 10.0, "30": -2.5}, "3": {"1": -15.7, "5": 12.7, "10": 1.6, "20": 16.5, "30": 4.0}, "5": {"1": -17.2, "5": 11.2, "10": 0.1, "20": 15.0, "30": 2.5}, "10": {"1": -15.9, "5": 12.5, "10": 1.4, "20": 16.3, "30": 3.8}, "15": {"1": -19.6, "5": 8.8, "10": -2.3, "20": 12.6, "30": 0.1}, "20": {"1": -14.0, "5": 14.4, "10": 3.3, "20": 18.2, "30": 5.7}, "30": {"1": -13.3, "5": 15.1, "10": 4.0, "20": 18.9, "30": 6.4}}},
     {"date": "2025-07-03", "time": "21:30", "nfp": {"act": "147K", "for": "111K"}, "unemp": {"act": "4.1%", "for": "4.3%"}, "wage": {"act": "0.2%", "for": "0.3%"}, "pips": {"1": {"1": 112.3, "5": 116.8, "10": 105.9, "20": 140.3, "30": 125.2}, "3": {"1": 98.7, "5": 103.2, "10": 92.3, "20": 126.7, "30": 111.6}, "5": {"1": 95.8, "5": 100.3, "10": 89.4, "20": 123.8, "30": 108.7}, "10": {"1": 105.0, "5": 109.5, "10": 98.6, "20": 133.0, "30": 117.9}, "15": {"1": 96.1, "5": 100.6, "10": 89.7, "20": 124.1, "30": 109.0}, "20": {"1": 92.7, "5": 97.2, "10": 86.3, "20": 120.7, "30": 105.6}, "30": {"1": 100.4, "5": 104.9, "10": 94.0, "20": 128.4, "30": 113.3}}}
 ];
@@ -129,16 +133,13 @@ function draw() {
     const e = document.getElementById('eSel').value;
     const box = document.getElementById('box');
     
-    // --- フィルタリング実行 ---
     const filtered = data.filter(d => {
         const [year, month] = d.date.split('-');
-        const yMatch = (y === 'all' || y === year);
-        const mMatch = (m === 'all' || m === month);
-        return yMatch && mMatch;
+        return (y === 'all' || y === year) && (m === 'all' || m === month);
     });
 
     if (filtered.length === 0) {
-        box.innerHTML = '<tr><td colspan="11" class="no-data">指定された条件のデータはありません。</td></tr>';
+        box.innerHTML = '<tr><td colspan="11" class="no-data">データが見つかりません</td></tr>';
         return;
     }
 
@@ -146,7 +147,7 @@ function draw() {
         const p = v.pips[e];
         if (!p) return '';
         
-        // 判定ロジック
+        // --- 判定ロジック ---
         let judge = { emoji: '🤔', label: '混戦' };
         if (Math.abs(p[1]) < 5) judge = { emoji: '😐', label: '織り込み' };
         else if (p[1] >= 10 && p[30] <= -2) judge = { emoji: '📉', label: '上髭騙し' };
@@ -173,7 +174,6 @@ function draw() {
         </tr>`;
     }).join('');
 }
-
 window.onload = draw;
 </script>
 </body>
