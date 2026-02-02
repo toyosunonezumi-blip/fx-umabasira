@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        /* --- 共通・ベース --- */
+        /* --- 共通ベース --- */
         body { background: #f0f2f5; padding: 20px; font-family: "Helvetica Neue", Arial, sans-serif; color: #333; }
         .control { background: #fff; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); max-width: 1000px; margin: auto; display: flex; align-items: center; gap: 20px; }
         .card { background: #fff; border-radius: 6px; padding: 12px 20px; max-width: 1000px; margin: 8px auto; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; align-items: center; border-left: 6px solid #888; gap: 0; }
@@ -12,40 +12,44 @@
         .up { color: #d3222d; } .down { color: #1677ff; }
         .up-bg { background: #fff1f0; } .down-bg { background: #e6f4ff; }
 
-        /* --- PC版レイアウト (769px以上) --- */
+        /* --- PC版設定 (769px以上) --- */
         @media (min-width: 769px) {
             .h-col { flex: 0 0 100px; text-align:center; border-right: 1px solid #eee; padding-right: 15px; font-weight: bold; }
-            .main-flex-sp { flex: 0 0 150px; } /* 1分後の幅 */
-            .p-col { text-align: center; }
+            
+            /* 1分後表示 */
+            .p-col { flex: 0 0 150px; text-align: center; }
             .p-val { font-size: 2.5rem; font-weight: 900; letter-spacing: -2px; line-height: 1.1; }
             
-            /* 【ご要望】経過時間を指標の前に配置 */
+            /* 【重要】PCでの並び順: 経過時間(order:3) -> 指標(order:4) */
             .tm-wrap { order: 3; flex: 0 0 300px; display: flex; gap: 6px; border-left: 1px solid #eee; padding-left: 20px; justify-content: center; }
             .d-col { order: 4; flex: 1; font-size: 0.75rem; border-left: 1px solid #eee; padding-left: 20px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
             
             .tm-box { flex: 0 0 65px; padding: 6px; border-radius: 4px; text-align: center; font-size: 0.75rem; font-weight: bold; }
         }
 
-        /* --- スマホ版レイアウト (768px以下) --- 元のデザインを維持 --- */
+        /* --- スマホ版設定 (768px以下) --- */
         @media (max-width: 768px) {
             body { padding: 10px; }
             .control { flex-direction: column; align-items: flex-start; gap: 10px; padding: 15px; }
-            .card { flex-direction: column; align-items: stretch; padding: 10px; padding-top: 35px; position: relative; gap: 10px; }
+            .card { flex-direction: column; align-items: stretch; padding: 10px; padding-top: 35px; position: relative; gap: 8px; }
             
+            /* 日付は絶対配置 */
             .h-col { position: absolute; top: 10px; left: 15px; border: none; padding: 0; text-align: left; font-size: 0.9rem; }
             
-            .main-flex-sp { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; border: none; }
+            /* 1分後と指標を横並びにするコンテナ */
+            .main-flex-sp { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; }
+            
             .p-col { flex: 0 0 auto; text-align: left; }
             .p-val { font-size: 2.2rem; }
             
-            /* 指標データを1分後の右側に配置 */
-            .d-col { border: none; padding: 5px 8px; background: #f9f9f9; border-radius: 6px; font-size: 0.65rem; gap: 2px; display: flex; flex-direction: column; flex: 1; }
+            /* 指標データ (1分後の右側) */
+            .d-col { flex: 1; border: none; padding: 5px 8px; background: #f9f9f9; border-radius: 6px; font-size: 0.65rem; display: flex; flex-direction: column; gap: 2px; }
             .d-item-sp { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding: 1px 0; }
             .d-item-sp:last-child { border: none; }
 
-            /* 経過時間を下部に配置 */
-            .tm-wrap { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; flex: none; width: 100%; border: none; padding-left: 0; margin-top: 5px; }
-            .tm-box { flex: none; padding: 5px 2px; font-size: 0.7rem; text-align: center; border-radius: 4px; font-weight: bold; }
+            /* 経過時間 (下部・グリッド表示) */
+            .tm-wrap { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; width: 100%; border: none; padding-left: 0; }
+            .tm-box { padding: 5px 2px; font-size: 0.7rem; text-align: center; border-radius: 4px; font-weight: bold; }
         }
     </style>
 </head>
@@ -70,7 +74,7 @@
 <div id="box"></div>
 
 <script>
-// データ（サンプルとして一部のみ。実際には元の全データを入れてください）
+// データ本体 (サンプル)
 const data = [{"date": "2025-12-16", "time": "22:30", "nfp": {"act": "64K", "for": "51K"}, "unemp": {"act": "4.6%", "for": "4.5%"}, "wage": {"act": "0.1%", "for": "0.3%"}, "pips": {"1": {"1": -22.2, "5": 6.2, "10": -4.9, "20": 10.0, "30": -2.5}, "3": {"1": -15.7, "5": 12.7, "10": 1.6, "20": 16.5, "30": 4.0}, "5": {"1": -17.2, "5": 11.2, "10": 0.1, "20": 15.0, "30": 2.5}, "10": {"1": -15.9, "5": 12.5, "10": 1.4, "20": 16.3, "30": 3.8}, "15": {"1": -19.6, "5": 8.8, "10": -2.3, "20": 12.6, "30": 0.1}, "20": {"1": -14.0, "5": 14.4, "10": 3.3, "20": 18.2, "30": 5.7}, "30": {"1": -13.3, "5": 15.1, "10": 4.0, "20": 18.9, "30": 6.4}}}, {"date": "2025-11-20", "time": "22:30", "nfp": {"act": "119K", "for": "53K"}, "unemp": {"act": "4.4%", "for": "4.3%"}, "wage": {"act": "0.2%", "for": "0.3%"}, "pips": {"1": {"1": -15.5, "5": -17.7, "10": -23.7, "20": 10.0, "30": -0.5}, "3": {"1": -18.2, "5": -20.4, "10": -26.4, "20": 7.3, "30": -3.2}, "5": {"1": -21.3, "5": -23.5, "10": -29.5, "20": 4.2, "30": -6.3}, "10": {"1": -23.7, "5": -25.9, "10": -31.9, "20": 1.8, "30": -8.7}, "15": {"1": -24.4, "5": -26.6, "10": -32.6, "20": 1.1, "30": -9.4}, "20": {"1": -19.6, "5": -21.8, "10": -27.8, "20": 5.9, "30": -4.6}, "30": {"1": -23.0, "5": -25.2, "10": -31.2, "20": 2.5, "30": -8.0}}}];
 
 function draw() {
@@ -86,7 +90,7 @@ function draw() {
         <div class="card" style="border-left-color:${borderColor}">
             <div class="h-col">${v.date}</div>
             
-            <div class="main-flex-sp">
+            <div class="main-flex-sp p-col">
                 <div class="p-col">
                     <small style="color:#aaa; font-size:0.6rem; font-weight:bold;">1分後推移</small>
                     <div class="p-val ${cls}">${p[1]>=0?'+':''}${p[1]}</div>
